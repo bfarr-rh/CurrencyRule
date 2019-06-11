@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring       http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <bean class="com.redhat.currencyvalidation.RulesBean" id="rulesBean"/>
+    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+        <route id="currency_route">
+            <from id="currency_symbols" uri="file:src/currency?delete=true"/>
+            <convertBodyTo id="convertToString" type="java.lang.String"/>
+            <bean id="currencyBean" method="setCurrencyMap" ref="rulesBean"/>
+            <log id="validCurrency" message="Currency symbols updated"/>
+        </route>
+        <route id="SedaRoute">
+            <from id="_from1" uri="file:src/data"/>
+            <split id="jsonArray">
+                <jsonpath>$</jsonpath>
+				<bean id="convertionBean" method="convertToJson" ref="rulesBean"/>
+                <log id="splitData" message="Input data split. ${body}"/>
+                <to id="ToSeda" uri="seda:dataQueue"/>
+            </split>
+        </route>
+        <route id="SedaProcessingRoute">
+            <from id="FromSeda" uri="seda:dataQueue?concurrentConsumers=5"/>
+            <bean id="validateBean" method="validateCurrency" ref="rulesBean"/>
+            <log id="sedaData" message="From Seda Queue. ${body}"/>
+        </route>
+    </camelContext>
+</beans>
