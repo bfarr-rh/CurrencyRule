@@ -10,7 +10,7 @@ rule "Currency Unknown"
 	dialect "mvel"
 
 	when
-		$data : CurrencyData( currency not memberOf currencyMap )
+		$data : CurrencyData( currency not memberOf currencyMap.keySet() )
 	then
 		System.out.println("Executed Rule: " + drools.getRule().getName() );
 		result.setValid(false);

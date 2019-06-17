@@ -1,6 +1,6 @@
 package com.redhat.currencyvalidation;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
@@ -26,34 +26,13 @@ import com.myspace.currencyrules.CurrentCheckResult;
 
 
 public class RulesBean {
-	static Map<String, String> currencyMap = new HashMap<String, String>(500);
+	static volatile Map<String, String> currencyMap = new ConcurrentHashMap<String, String>(500);
 	static String FORMAT = "{ \"TransId\": \"%s\":, \"Currency\" : \"%s\", \"Amount\" : %d }";
 	
 	final static String G = "com.myspace";
     final static String A = "currencyRules";
     final static String V = "1.0.0-SNAPSHOT";
     static final String drlFile = "rules.drl";
-
-/*    
- * The following are meant fo KieScaner
- */
-    /*
-    private KieServices kieServices;
-    private ReleaseId releaseId;
-    private KieContainer kContainer;
-    private KieScanner kScanner;
-	
-    
-    public RulesBean() {
-    	kieServices = KieServices.Factory.get();
-    	releaseId = kieServices.newReleaseId( G, A, V );
-    	kContainer = kieServices.newKieContainer( releaseId );
-    	kScanner = kieServices.newKieScanner( kContainer );
-
-    	// Start the KieScanner polling the Maven repository every 10 seconds
-    	kScanner.start( 10000L );
-    	System.out.println("KieScanner Initialised...");
-    }*/
     
     KieFileSystem kFileSystem;
     KieBuilder kBuilder;
@@ -75,17 +54,17 @@ public class RulesBean {
     
 	public void setCurrencyMap(String content) {
 		JSONArray array = new JSONArray(content);
-		Map<String, String> map = new HashMap<String, String>(500);
+		Map<String, String> map = new ConcurrentHashMap<String, String>(500);
 		for (int i = 0; i < array.length(); i++) {  
 		     JSONObject obj = array.getJSONObject(i);
 
 		     map.put( obj.get("AlphabeticCode").toString(), obj.get("Currency").toString());
 
 		}
-		for (Entry<String, String> entry : currencyMap.entrySet()) {
+		for (Entry<String, String> entry : map.entrySet()) {
 		    System.out.println(entry.getKey() + ", " + entry.getValue());
 		}
-		System.out.println("No. of Entries: " + currencyMap.size());
+		System.out.println("No. of Entries: " + map.size());
 		currencyMap = map;
 	}
 	
@@ -94,7 +73,7 @@ public class RulesBean {
 		JSONObject json = new JSONObject(content);
 		CurrencyData data = new CurrencyData(json.get("TransId").toString(), json.get("Currency").toString());
 		CurrentCheckResult result = new CurrentCheckResult(true);
-		
+		System.out.println("Validate Currency No. of Entries: " + currencyMap.size());
         KieSession kieSession = kContainer.newKieSession();
         kieSession.setGlobal("currencyMap", currencyMap);
         kieSession.setGlobal("result", result);

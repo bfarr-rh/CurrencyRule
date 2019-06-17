@@ -3,6 +3,11 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring       http://camel.apache.org/schema/spring/camel-spring.xsd">
     <bean class="com.redhat.currencyvalidation.RulesBean" id="rulesBean"/>
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+        <rest path="/currency">
+            <post uri="/validate" consumes="application/json">
+                <to uri="direct:processingRoute"/>
+            </post>
+        </rest>
         <route id="currency_route">
             <from id="currency_symbols" uri="file:src/currency?delete=true"/>
             <convertBodyTo id="convertToString" type="java.lang.String"/>
@@ -20,6 +25,11 @@
         </route>
         <route id="SedaProcessingRoute">
             <from id="FromSeda" uri="seda:dataQueue?concurrentConsumers=5"/>
+            <to uri="direct:processingRoute"/>
+        </route>
+        <route id="processingRoute">
+            <from uri="direct:processingRoute"/>
+            <log message="received"/>
             <bean id="validateBean" method="validateCurrency" ref="rulesBean"/>
             <log id="sedaData" message="From Seda Queue. ${body}"/>
         </route>
