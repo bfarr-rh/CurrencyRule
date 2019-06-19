@@ -81,7 +81,7 @@ public class RulesBean {
         kieSession.fireAllRules();
         kieSession.dispose();
 
-		return String.format("{ \"valid\" : %d, \"currency\" : \"%s\" }", ((result.isValid())? 1: 0), data.getCurrency());
+		return String.format("{ \"valid\" : %s, \"currency\" : \"%s\" }", result.isValid(), data.getCurrency());
 	}
 
 	public String convertToJson(String data) {

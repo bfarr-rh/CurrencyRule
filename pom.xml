@@ -127,13 +127,25 @@
         <configuration>
           <outputDirectory>${project.build.directory}</outputDirectory>
           <resources>
-                    <resource>
-                        <directory>${basedir}</directory>
-                        <includes>
-                            <include>src/currency/**</include>
-                        </includes>
-                    </resource>
-                </resources>
+            <resource>
+                <directory>${basedir}</directory>
+                <includes>
+                    <include>src/currency/**</include>
+                </includes>
+            </resource>
+            <resource>
+              <directory>${basedir}</directory>
+              <includes>
+                <include>src/data/**</include>
+              </includes>
+            </resource>
+            <resource>
+              <directory>${basedir}</directory>
+              <includes>
+                <include>src/demoFiles/**</include>
+              </includes>
+            </resource>
+          </resources>
 
         </configuration>
       </execution>
