@@ -1,0 +1,17 @@
+//created on: 11/06/2019
+package com.myspace.currencyrules
+
+import java.util.Map;
+
+global Map currencyMap;
+global CurrentCheckResult result;
+
+rule "Currency Unknown"
+	dialect "mvel"
+
+	when
+		$data : CurrencyData( currency not memberOf currencyMap.keySet() )
+	then
+		System.out.println("Executed Rule: " + drools.getRule().getName() );
+		result.setValid(false);
+end
